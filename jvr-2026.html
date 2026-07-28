@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="id" data-theme="jvr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Jakarta Vertical Run 2026 — Autograph Tower</title>
+    <meta
+      name="description"
+      content="Jakarta Vertical Run 2026 — event lari vertikal internasional terbesar di Asia Tenggara. 100 lantai, ±2.100 anak tangga, Autograph Tower, 14–15 November 2026."
+    />
+
+    <!--
+      Catatan implementasi:
+      Karena file ini melanjutkan boilerplate Vite yang sudah kamu kirim
+      (dengan /src/main.js), kemungkinan Tailwind + DaisyUI + Alpine sudah
+      terpasang lewat npm di project-mu. Supaya file ini tetap bisa langsung
+      dibuka & di-preview tanpa bergantung ke config yang tidak saya punya,
+      saya sertakan versi CDN di bawah ini.
+
+      Kalau project-mu sudah punya tailwind.config.js sendiri:
+      1) Hapus 3 tag <script> CDN (Tailwind, DaisyUI plugin dibundel di CDN build ini) di bawah.
+      2) Copy blok `tailwind.config` di bawah ini ke tailwind.config.js kamu
+         (theme.extend.colors, fontFamily, daisyui.themes).
+      3) Pastikan Alpine sudah di-import di main.js: import Alpine from 'alpinejs'; window.Alpine = Alpine; Alpine.start();
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#0B0E12",
+              steel: "#232A33",
+              steelline: "#3D4753",
+              concrete: "#EEEAE1",
+              signal: "#FF4B1F",
+              sky: "#7FC8E8",
+              chalk: "#F6F4EE",
+            },
+            fontFamily: {
+              display: ["Oswald", "sans-serif"],
+              body: ["Inter", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+        daisyui: {
+          themes: [
+            {
+              jvr: {
+                primary: "#FF4B1F",
+                secondary: "#7FC8E8",
+                accent: "#FF4B1F",
+                neutral: "#232A33",
+                "base-100": "#0B0E12",
+                info: "#7FC8E8",
+                success: "#3DDC97",
+                warning: "#FFB020",
+                error: "#FF4B1F",
+              },
+            },
+          ],
+        },
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+    <style>
+      html { scroll-behavior: smooth; }
+      body { background-color: #0B0E12; }
+      .font-display { font-family: "Oswald", sans-serif; letter-spacing: 0.01em; }
+      .font-mono { font-family: "JetBrains Mono", monospace; }
+
+      /* garis tangga dekoratif tipis di antar-section gelap */
+      .stair-rule {
+        background-image: repeating-linear-gradient(
+          90deg,
+          rgba(246, 244, 238, 0.14) 0px,
+          rgba(246, 244, 238, 0.14) 18px,
+          transparent 18px,
+          transparent 36px
+        );
+        height: 1px;
+      }
+
+      /* panel elevator — elemen tanda tangan halaman ini */
+      .lift-rail {
+        backdrop-filter: blur(6px);
+      }
+      .lift-btn[data-active="true"] {
+        background-color: #FF4B1F;
+        color: #0B0E12;
+        box-shadow: 0 0 0 3px rgba(255, 75, 31, 0.25);
+      }
+      .lift-btn[data-active="true"] .lift-btn-sub {
+        color: rgba(11, 14, 18, 0.75);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+      }
+    </style>
+  </head>
+
+  <body class="font-body bg-ink text-chalk antialiased">
+    <!-- ============ SKIP LINK ============ -->
+    <a
+      href="#konten"
+      class="sr-only focus:not-sr-only focus:fixed focus:z-[100] focus:top-3 focus:left-3 focus:bg-signal focus:text-ink focus:px-4 focus:py-2 focus:rounded"
+      >Lompat ke konten</a
+    >
+
+    <!-- ============ HEADER / NAV ============ -->
+    <header
+      x-data="{ scrolled: false, mobileOpen: false, circuitOpen: false }"
+      x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 24 })"
+      @keydown.escape.window="mobileOpen = false; circuitOpen = false"
+      class="fixed top-0 inset-x-0 z-50 transition-colors duration-300"
+      :class="scrolled ? 'bg-ink/95 border-b border-steelline backdrop-blur' : 'bg-transparent border-b border-transparent'"
+    >
+      <div class="max-w-7xl mx-auto px-5 md:px-8">
+        <div class="h-16 md:h-20 flex items-center justify-between">
+          <a href="#top" class="flex items-center gap-2 shrink-0">
+            <span class="font-display text-xl md:text-2xl font-semibold tracking-wide">JVR</span>
+            <span class="font-mono text-[11px] md:text-xs text-signal border border-signal/50 rounded px-1.5 py-0.5"
+              >2026</span
+            >
+          </a>
+
+          <!-- nav desktop -->
+          <nav aria-label="Navigasi utama" class="hidden lg:flex items-center gap-8 font-display text-sm tracking-wide uppercase">
+            <a href="#ringkasan" class="hover:text-signal transition-colors">Tentang</a>
+            <a href="#kategori" class="hover:text-signal transition-colors">Kategori</a>
+            <a href="#rute" class="hover:text-signal transition-colors">Rute</a>
+            <a href="#keamanan" class="hover:text-signal transition-colors">Keamanan</a>
+
+            <!-- dropdown kustom: div biasa + Alpine, BUKAN komponen dropdown/details bawaan -->
+            <div class="relative" @click.outside="circuitOpen = false">
+              <button
+                type="button"
+                @click="circuitOpen = !circuitOpen"
+                :aria-expanded="circuitOpen"
+                aria-haspopup="true"
+                class="flex items-center gap-1 hover:text-signal transition-colors"
+              >
+                Circuit Dunia
+                <svg
+                  class="w-3.5 h-3.5 transition-transform"
+                  :class="circuitOpen ? 'rotate-180' : ''"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <div
+                x-show="circuitOpen"
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 -translate-y-1"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-end="opacity-0"
+                class="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 rounded-lg border border-steelline bg-steel shadow-xl normal-case py-2"
+                style="display: none"
+              >
+                <a href="#circuit" @click="circuitOpen = false" class="block px-4 py-2.5 text-sm hover:bg-ink hover:text-signal transition-colors">Kalender Circuit 2026</a>
+                <a href="#lingkungan" @click="circuitOpen = false" class="block px-4 py-2.5 text-sm hover:bg-ink hover:text-signal transition-colors">Komitmen Lingkungan</a>
+                <a href="#dampak" @click="circuitOpen = false" class="block px-4 py-2.5 text-sm hover:bg-ink hover:text-signal transition-colors">Dampak &amp; Manfaat</a>
+                <a href="#jadwal" @click="circuitOpen = false" class="block px-4 py-2.5 text-sm hover:bg-ink hover:text-signal transition-colors">Jadwal Acara</a>
+              </div>
+            </div>
+
+            <a href="#faq" class="hover:text-signal transition-colors">FAQ</a>
+          </nav>
+
+          <div class="hidden lg:block">
+            <a
+              href="#daftar"
+              class="font-display uppercase tracking-wide text-sm bg-signal text-ink px-5 py-2.5 rounded hover:brightness-110 transition"
+              >Daftar Sekarang</a
+            >
+          </div>
+
+          <!-- toggle menu mobile: div/button biasa -->
+          <button
+            type="button"
+            @click="mobileOpen = !mobileOpen"
+            :aria-expanded="mobileOpen"
+            aria-controls="menu-mobile"
+            class="lg:hidden flex items-center justify-center w-10 h-10 -mr-2"
+          >
+            <span class="sr-only">Buka menu</span>
+            <div class="w-6 flex flex-col gap-1.5">
+              <div class="h-0.5 bg-chalk transition-transform origin-center" :class="mobileOpen ? 'rotate-45 translate-y-2' : ''"></div>
+              <div class="h-0.5 bg-chalk transition-opacity" :class="mobileOpen ? 'opacity-0' : ''"></div>
+              <div class="h-0.5 bg-chalk transition-transform origin-center" :class="mobileOpen ? '-rotate-45 -translate-y-2' : ''"></div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- panel menu mobile: div biasa, bukan <dialog>/daisy drawer -->
+      <div
+        id="menu-mobile"
+        x-show="mobileOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 -translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        class="lg:hidden bg-ink border-b border-steelline px-5 pb-6 pt-2"
+        style="display: none"
+      >
+        <nav aria-label="Navigasi mobile" class="flex flex-col font-display uppercase tracking-wide text-base divide-y divide-steelline/70">
+          <a @click="mobileOpen = false" href="#ringkasan" class="py-3">Tentang</a>
+          <a @click="mobileOpen = false" href="#kategori" class="py-3">Kategori</a>
+          <a @click="mobileOpen = false" href="#rute" class="py-3">Rute</a>
+          <a @click="mobileOpen = false" href="#keamanan" class="py-3">Keamanan</a>
+          <a @click="mobileOpen = false" href="#circuit" class="py-3">Circuit Dunia</a>
+          <a @click="mobileOpen = false" href="#jadwal" class="py-3">Jadwal</a>
+          <a @click="mobileOpen = false" href="#faq" class="py-3">FAQ</a>
+        </nav>
+        <a
+          @click="mobileOpen = false"
+          href="#daftar"
+          class="mt-4 block text-center font-display uppercase tracking-wide text-sm bg-signal text-ink px-5 py-3 rounded"
+          >Daftar Sekarang</a
+        >
+      </div>
+    </header>
+
+    <!-- ============ PANEL LIFT (elemen tanda tangan, desktop only — versi ramping) ============ -->
+    <div
+      x-data="liftRail()"
+      x-init="init()"
+      class="lift-rail hidden xl:flex fixed right-7 top-1/2 -translate-y-1/2 z-40"
+    >
+      <div class="relative flex flex-col items-center gap-7 py-2">
+        <div class="absolute top-0 bottom-0 w-px bg-steelline" aria-hidden="true"></div>
+        <template x-for="f in floors" :key="f.value">
+          <button
+            type="button"
+            @click="document.getElementById(f.target)?.scrollIntoView({ behavior: 'smooth' })"
+            :aria-current="current === f.value ? 'true' : 'false'"
+            :aria-label="'Lantai ' + f.value + ' — ' + f.label"
+            class="group relative flex items-center justify-center w-3.5 h-3.5 rounded-full border transition-all"
+            :class="current === f.value ? 'bg-signal border-signal scale-125' : 'bg-ink border-steelline hover:border-signal/70'"
+          >
+            <span
+              class="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[11px] tracking-wide bg-steel/90 border border-steelline rounded px-2 py-1 transition-opacity"
+              :class="current === f.value ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+            >
+              <span class="text-signal" x-text="f.value"></span>
+              <span class="text-chalk/60"> · </span><span x-text="f.label"></span>
+            </span>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <main id="konten">
+      <!-- ============ HERO ============ -->
+      <section id="top" class="relative min-h-screen flex items-center overflow-hidden pt-24 pb-16">
+        <!-- siluet gedung dekoratif -->
+        <svg
+          class="absolute inset-0 w-full h-full opacity-40 pointer-events-none"
+          preserveAspectRatio="xMidYMax slice"
+          viewBox="0 0 1440 900"
+          fill="none"
+        >
+          <rect x="120" y="380" width="90" height="520" fill="#161B22" />
+          <rect x="230" y="300" width="70" height="600" fill="#12161C" />
+          <rect x="1180" y="340" width="80" height="560" fill="#161B22" />
+          <rect x="1280" y="420" width="60" height="480" fill="#12161C" />
+          <rect x="620" y="60" width="200" height="840" fill="#1B222B" />
+          <g stroke="#3D4753" stroke-width="1">
+            <line x1="620" y1="140" x2="820" y2="140" />
+            <line x1="620" y1="220" x2="820" y2="220" />
+            <line x1="620" y1="300" x2="820" y2="300" />
+            <line x1="620" y1="380" x2="820" y2="380" />
+            <line x1="620" y1="460" x2="820" y2="460" />
+            <line x1="620" y1="540" x2="820" y2="540" />
+            <line x1="620" y1="620" x2="820" y2="620" />
+            <line x1="620" y1="700" x2="820" y2="700" />
+          </g>
+          <rect x="700" y="20" width="40" height="40" fill="#FF4B1F" opacity="0.85" />
+        </svg>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/20"></div>
+
+        <div class="relative max-w-7xl mx-auto px-5 md:px-8 w-full">
+          <p class="font-mono text-signal text-xs md:text-sm tracking-[0.25em] uppercase mb-5">
+            Menyambut 5 Abad Kota Jakarta · 2026
+          </p>
+          <h1 class="font-display font-semibold uppercase leading-[0.95] text-5xl sm:text-6xl md:text-8xl max-w-4xl">
+            Tertinggi.<br />
+            Terjauh.<br />
+            <span class="text-signal">Terbesar di Asia Tenggara.</span>
+          </h1>
+          <p class="mt-6 max-w-xl text-chalk/75 text-base md:text-lg">
+            Jakarta Vertical Run 2026 — event lari vertikal internasional terbesar di Asia Tenggara,
+            menghadirkan atlet elite dari berbagai negara menaklukkan gedung tertinggi Indonesia.
+          </p>
+
+          <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm text-chalk/80">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/></svg>
+              14–15 November 2026
+            </span>
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.5"/></svg>
+              Autograph Tower, Thamrin Nine, Jakarta Pusat
+            </span>
+          </div>
+
+          <div class="mt-9 flex flex-wrap items-center gap-4">
+            <a href="#daftar" class="font-display uppercase tracking-wide bg-signal text-ink px-7 py-3.5 rounded hover:brightness-110 transition">
+              Daftar Sekarang
+            </a>
+            <a href="#rute" class="font-display uppercase tracking-wide border border-chalk/30 px-7 py-3.5 rounded hover:border-signal hover:text-signal transition">
+              Lihat Rute Lomba
+            </a>
+          </div>
+
+          <!-- countdown -->
+          <div
+            x-data="countdown('2026-11-14T06:00:00+07:00')"
+            x-init="tick(); setInterval(tick, 1000)"
+            class="mt-12 grid grid-cols-4 gap-3 max-w-md"
+          >
+            <template x-for="unit in units" :key="unit.label">
+              <div class="border border-steelline rounded-lg py-3 text-center bg-steel/40">
+                <div class="font-mono text-2xl md:text-3xl font-semibold text-signal tabular-nums" x-text="unit.value"></div>
+                <div class="font-mono text-[10px] uppercase tracking-widest text-chalk/50 mt-1" x-text="unit.label"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <div class="stair-rule"></div>
+
+      <!-- ============ RINGKASAN EKSEKUTIF ============ -->
+      <section id="ringkasan" class="py-20 md:py-28 bg-ink">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+            <div>
+              <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Ringkasan Eksekutif</p>
+              <h2 class="font-display uppercase text-3xl md:text-5xl font-semibold max-w-2xl leading-tight">
+                Event lari vertikal internasional terbesar di Asia Tenggara
+              </h2>
+            </div>
+            <p class="text-chalk/70 max-w-sm text-sm md:text-base">
+              Menghadirkan atlet elite dari berbagai negara untuk berkompetisi di gedung tertinggi Indonesia,
+              sekaligus momentum perayaan 5 Abad Kota Jakarta.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-steelline border border-steelline rounded-xl overflow-hidden">
+            <template
+              x-data="{
+                stats: [
+                  { n: '1.000+', l: 'Peserta' },
+                  { n: '25+', l: 'Negara Peserta' },
+                  { n: '100', l: 'Lantai &amp; 2.100 Anak Tangga' },
+                  { n: '50+', l: 'Sponsor &amp; Merchant' },
+                  { n: 'SEA', l: 'Terbesar di Asia Tenggara' },
+                  { n: '500', l: 'Tahun Kota Jakarta 2026' },
+                  { n: '#1', l: 'Venue Tertinggi Indonesia' },
+                  { n: 'WTC', l: 'Circuit Resmi Dunia' },
+                ]
+              }"
+              x-for="s in stats"
+              :key="s.l"
+            >
+              <div class="bg-ink p-6 md:p-7 hover:bg-steel/40 transition-colors">
+                <div class="font-mono text-3xl md:text-4xl font-semibold text-signal" x-text="s.n"></div>
+                <div class="mt-2 text-xs md:text-sm text-chalk/70 uppercase tracking-wide" x-html="s.l"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ LATAR BELAKANG & TUJUAN ============ -->
+      <section class="py-20 md:py-28 bg-steel/30 border-y border-steelline">
+        <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-12 gap-12">
+          <div class="lg:col-span-5">
+            <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Konteks &amp; Momentum Strategis</p>
+            <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-6">
+              Latar Belakang Event
+            </h2>
+            <p class="text-chalk/75 leading-relaxed mb-4">
+              Perayaan menjelang 5 Abad Kota Jakarta 2026 menjadi momentum bersejarah untuk menghadirkan
+              event olahraga internasional yang ikonik.
+            </p>
+            <p class="text-chalk/75 leading-relaxed mb-4">
+              Mengembangkan sport tourism Jakarta sebagai destinasi utama Asia Tenggara, sekaligus menarik
+              atlet elite internasional dari berbagai negara untuk berkompetisi di ibu kota.
+            </p>
+            <p class="text-chalk/75 leading-relaxed">
+              Membangun event olahraga ikonik tahunan yang menjadi legacy jangka panjang bagi Jakarta dan
+              meningkatkan citra kota di kancah global.
+            </p>
+          </div>
+
+          <div class="lg:col-span-7">
+            <p class="font-display uppercase text-sm tracking-widest text-chalk/50 mb-5">Tujuan Utama</p>
+            <div class="space-y-4">
+              <div class="border border-steelline rounded-xl p-6 flex gap-5">
+                <span class="font-mono text-signal text-2xl font-semibold shrink-0">01</span>
+                <div>
+                  <h3 class="font-display uppercase text-lg mb-1.5">Atlet Elite Internasional</h3>
+                  <p class="text-chalk/70 text-sm leading-relaxed">
+                    Menarik atlet elite dari berbagai negara untuk berkompetisi di gedung tertinggi
+                    Indonesia, memperkuat posisi Jakarta di peta olahraga dunia.
+                  </p>
+                </div>
+              </div>
+              <div class="border border-steelline rounded-xl p-6 flex gap-5">
+                <span class="font-mono text-signal text-2xl font-semibold shrink-0">02</span>
+                <div>
+                  <h3 class="font-display uppercase text-lg mb-1.5">Exposure Global Jakarta</h3>
+                  <p class="text-chalk/70 text-sm leading-relaxed">
+                    Meningkatkan citra Jakarta sebagai kota olahraga kelas dunia, sejajar dengan Dubai,
+                    Taipei, dan Frankfurt, melalui liputan media internasional.
+                  </p>
+                </div>
+              </div>
+              <div class="border border-steelline rounded-xl p-6 flex gap-5">
+                <span class="font-mono text-signal text-2xl font-semibold shrink-0">03</span>
+                <div>
+                  <h3 class="font-display uppercase text-lg mb-1.5">Circuit Resmi Dunia</h3>
+                  <p class="text-chalk/70 text-sm leading-relaxed">
+                    Mengembangkan potensi atlet Indonesia dan memasukkan Jakarta Vertical Run ke dalam
+                    circuit resmi vertical running dunia.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CIRCUIT DUNIA ============ -->
+      <section id="circuit" class="py-20 md:py-28 bg-ink">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Circuit Internasional 2026</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-4 max-w-2xl">
+            Mengapa November?
+          </h2>
+          <p class="text-chalk/70 max-w-2xl mb-12 leading-relaxed">
+            November dipilih karena minimnya kompetisi global di bulan tersebut, cuaca Jakarta yang kondusif
+            untuk event outdoor, serta menjadi puncak akhir musim untuk pengumpulan ranking poin atlet
+            internasional — memberi kesempatan atlet mengamankan peringkat akhir tahun.
+          </p>
+
+          <div class="grid md:grid-cols-6 gap-3">
+            <template
+              x-data="{
+                months: [
+                  { m: 'Jan', e: 'Dubai Tower Run', active: false },
+                  { m: 'Mar', e: 'Taipei 101 Run Up', active: false },
+                  { m: 'Mei', e: 'Empire State Building Run', active: false },
+                  { m: 'Jul', e: 'Frankfurt Tower Running', active: false },
+                  { m: 'Sep', e: 'Singapore Swissôtel', active: false },
+                  { m: 'Nov', e: 'Jakarta Vertical Run 2026', active: true },
+                ]
+              }"
+              x-for="c in months"
+              :key="c.m"
+            >
+              <div
+                class="rounded-xl border p-5 flex flex-col justify-between min-h-[140px]"
+                :class="c.active ? 'border-signal bg-signal/10' : 'border-steelline bg-steel/30'"
+              >
+                <span class="font-mono text-xs uppercase tracking-widest" :class="c.active ? 'text-signal' : 'text-chalk/50'" x-text="c.m"></span>
+                <span class="font-display text-sm md:text-base leading-snug mt-4" :class="c.active ? 'text-chalk' : 'text-chalk/70'" x-text="c.e"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <div class="stair-rule"></div>
+
+      <!-- ============ KATEGORI & ALUR PERLOMBAAN ============ -->
+      <section id="kategori" class="py-20 md:py-28 bg-steel/30 border-b border-steelline">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Spesifikasi Lomba</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-4 max-w-2xl">
+            Kategori &amp; Sistem Flag-Off
+          </h2>
+          <p class="text-chalk/70 max-w-2xl mb-12 leading-relaxed">
+            Ketinggian gedung ±385 meter dengan 100 lantai dan ±2.100 anak tangga. Peserta dilepas per wave
+            untuk menjaga jarak aman antar-pelari di tangga.
+          </p>
+
+          <!-- tab kustom: div + Alpine, bukan komponen tab bawaan -->
+          <div x-data="{ tab: 'elite' }" class="mb-16">
+            <div class="flex flex-wrap gap-2 mb-8" role="tablist" aria-label="Kategori lomba">
+              <button
+                type="button"
+                role="tab"
+                @click="tab = 'elite'"
+                :aria-selected="tab === 'elite'"
+                class="font-display uppercase text-sm tracking-wide px-5 py-2.5 rounded-full border transition-colors"
+                :class="tab === 'elite' ? 'bg-signal text-ink border-signal' : 'border-steelline text-chalk/70 hover:border-signal/60'"
+              >
+                Elite
+              </button>
+              <button
+                type="button"
+                role="tab"
+                @click="tab = 'open'"
+                :aria-selected="tab === 'open'"
+                class="font-display uppercase text-sm tracking-wide px-5 py-2.5 rounded-full border transition-colors"
+                :class="tab === 'open' ? 'bg-signal text-ink border-signal' : 'border-steelline text-chalk/70 hover:border-signal/60'"
+              >
+                Open 18–39
+              </button>
+              <button
+                type="button"
+                role="tab"
+                @click="tab = 'master'"
+                :aria-selected="tab === 'master'"
+                class="font-display uppercase text-sm tracking-wide px-5 py-2.5 rounded-full border transition-colors"
+                :class="tab === 'master' ? 'bg-signal text-ink border-signal' : 'border-steelline text-chalk/70 hover:border-signal/60'"
+              >
+                Master 40+
+              </button>
+            </div>
+
+            <div class="border border-steelline rounded-xl p-7 md:p-9 bg-ink">
+              <div x-show="tab === 'elite'" x-transition.opacity>
+                <h3 class="font-display uppercase text-xl mb-2">Kategori Elite</h3>
+                <p class="text-chalk/70 leading-relaxed mb-4">
+                  Diperuntukkan bagi atlet profesional vertical running dari dalam dan luar negeri,
+                  berkompetisi memperebutkan posisi terdepan di circuit resmi dunia.
+                </p>
+                <p class="font-mono text-sm text-signal">Flag-off: 10 detik / atlet</p>
+              </div>
+              <div x-show="tab === 'open'" x-transition.opacity>
+                <h3 class="font-display uppercase text-xl mb-2">Kategori Open 18–39</h3>
+                <p class="text-chalk/70 leading-relaxed mb-4">
+                  Kategori umum untuk pelari putra dan putri usia 18–39 tahun. Start dilepas per wave,
+                  masing-masing 5 pelari.
+                </p>
+                <p class="font-mono text-sm text-signal">Flag-off: 10 detik / individu / 5 pelari per wave</p>
+              </div>
+              <div x-show="tab === 'master'" x-transition.opacity>
+                <h3 class="font-display uppercase text-xl mb-2">Kategori Master 40+</h3>
+                <p class="text-chalk/70 leading-relaxed mb-4">
+                  Kategori umum untuk pelari putra dan putri usia 40 tahun ke atas, dengan sistem start dan
+                  jalur yang sama dengan kategori Open.
+                </p>
+                <p class="font-mono text-sm text-signal">Flag-off: 10 detik / individu / 5 pelari per wave</p>
+              </div>
+              <p class="mt-6 pt-6 border-t border-steelline text-xs text-chalk/50 leading-relaxed">
+                Urutan flag-off: Elite → Men's Open → Men's Master → Women's Open → Women's Master.
+              </p>
+            </div>
+          </div>
+
+          <!-- alur perlombaan: urutan sungguhan, penomoran relevan -->
+          <p class="font-display uppercase text-sm tracking-widest text-chalk/50 mb-6">Alur Perlombaan</p>
+          <ol class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <li class="border border-steelline rounded-xl p-5 bg-ink">
+              <span class="font-mono text-signal text-sm">01</span>
+              <p class="font-display uppercase mt-2">Start Lobby</p>
+            </li>
+            <li class="border border-steelline rounded-xl p-5 bg-ink">
+              <span class="font-mono text-signal text-sm">02</span>
+              <p class="font-display uppercase mt-2">Pemanasan 200m</p>
+            </li>
+            <li class="border border-steelline rounded-xl p-5 bg-ink">
+              <span class="font-mono text-signal text-sm">03</span>
+              <p class="font-display uppercase mt-2">Naik Tangga</p>
+            </li>
+            <li class="border border-steelline rounded-xl p-5 bg-ink">
+              <span class="font-mono text-signal text-sm">04</span>
+              <p class="font-display uppercase mt-2">Checkpoint</p>
+            </li>
+            <li class="border border-steelline rounded-xl p-5 bg-ink">
+              <span class="font-mono text-signal text-sm">05</span>
+              <p class="font-display uppercase mt-2">Vertical Climb ±350m</p>
+            </li>
+            <li class="border border-signal/60 rounded-xl p-5 bg-signal/10">
+              <span class="font-mono text-signal text-sm">06</span>
+              <p class="font-display uppercase mt-2">Finish Rooftop</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ============ VENUE ============ -->
+      <section class="py-20 md:py-28 bg-ink">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <div class="grid lg:grid-cols-2 gap-14 items-start">
+            <div>
+              <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Race Venue</p>
+              <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-2">
+                Autograph Tower
+              </h2>
+              <p class="text-chalk/60 text-sm mb-8">Thamrin Nine — Gedung tertinggi di Indonesia &amp; seluruh Belahan Bumi Selatan</p>
+
+              <div class="grid grid-cols-3 gap-4 mb-10">
+                <div>
+                  <div class="font-mono text-3xl font-semibold text-signal">385m</div>
+                  <div class="text-xs text-chalk/60 uppercase mt-1">Tinggi Bangunan</div>
+                </div>
+                <div>
+                  <div class="font-mono text-3xl font-semibold text-signal">107</div>
+                  <div class="text-xs text-chalk/60 uppercase mt-1">Lantai ke Puncak Spire</div>
+                </div>
+                <div>
+                  <div class="font-mono text-3xl font-semibold text-signal">2.120</div>
+                  <div class="text-xs text-chalk/60 uppercase mt-1">Anak Tangga</div>
+                </div>
+              </div>
+
+              <div class="space-y-3 text-sm text-chalk/70 font-mono">
+                <div class="flex justify-between border-b border-steelline pb-2"><span>Level 109</span><span>Sky Garden Observatory</span></div>
+                <div class="flex justify-between border-b border-steelline pb-2"><span>Level 99</span><span>Finish Area / Rooftop</span></div>
+                <div class="flex justify-between border-b border-steelline pb-2"><span>Level 85</span><span>Skyline Observatorium</span></div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="border border-steelline rounded-xl p-6">
+                <h3 class="font-display uppercase text-lg mb-2">Rekor Asia Tenggara</h3>
+                <p class="text-chalk/70 text-sm leading-relaxed">
+                  Gedung tertinggi Indonesia dengan 100 lantai dan ±385 meter. Mencetak rekor Asia Tenggara
+                  untuk vertical run dengan ±2.100 anak tangga.
+                </p>
+              </div>
+              <div class="border border-steelline rounded-xl p-6">
+                <h3 class="font-display uppercase text-lg mb-2">Aksesibilitas Premium</h3>
+                <p class="text-chalk/70 text-sm leading-relaxed">
+                  Terintegrasi langsung dengan MRT, TransJakarta, dan Airport Rail Link — memudahkan akses
+                  peserta domestik maupun internasional.
+                </p>
+              </div>
+              <div class="border border-steelline rounded-xl p-6">
+                <h3 class="font-display uppercase text-lg mb-2">Fasilitas Lengkap</h3>
+                <p class="text-chalk/70 text-sm leading-relaxed">
+                  Dikelilingi hotel bintang 5 (Pan Pacific, Park Royal), retail podium, restoran, kafe, dan
+                  pusat olahraga Thamrin Nine.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="stair-rule"></div>
+
+      <!-- ============ RUTE & WATER STATION ============ -->
+      <section id="rute" class="py-20 md:py-28 bg-steel/30 border-b border-steelline">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Peta Rute</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-4 max-w-2xl">
+            Empat Water Station, Satu Tanjakan 350 Meter
+          </h2>
+          <p class="text-chalk/70 max-w-2xl mb-14 leading-relaxed">
+            Total jarak vertikal lomba ±350 meter. Setiap water station juga berfungsi sebagai pos medis,
+            dijaga marshal tiap 2 lantai.
+          </p>
+
+          <div class="grid md:grid-cols-4 gap-4">
+            <div id="zone-100" class="border border-signal/50 bg-signal/10 rounded-xl p-6">
+              <div class="font-mono text-signal text-3xl font-semibold">Lt. 100</div>
+              <p class="font-display uppercase text-sm mt-2">Finish — Rooftop</p>
+              <p class="text-chalk/60 text-xs mt-2 leading-relaxed">
+                Kapasitas rooftop 500 orang. Celebration, pengalungan medali, swafoto. Turun via 4 lift ke
+                lantai 2.
+              </p>
+            </div>
+            <div id="zone-80" class="border border-steelline rounded-xl p-6">
+              <div class="font-mono text-signal text-3xl font-semibold">Lt. 80</div>
+              <p class="font-display uppercase text-sm mt-2">Water Station 3</p>
+              <p class="text-chalk/60 text-xs mt-2 leading-relaxed">Pos medis &amp; hidrasi, dijaga tim medis dan petugas damkar.</p>
+            </div>
+            <div id="zone-57" class="border border-steelline rounded-xl p-6">
+              <div class="font-mono text-signal text-3xl font-semibold">Lt. 57</div>
+              <p class="font-display uppercase text-sm mt-2">Water Station 2</p>
+              <p class="text-chalk/60 text-xs mt-2 leading-relaxed">Pos medis &amp; hidrasi, dijaga tim medis dan petugas damkar.</p>
+            </div>
+            <div id="zone-26" class="border border-steelline rounded-xl p-6">
+              <div class="font-mono text-signal text-3xl font-semibold">Lt. 26</div>
+              <p class="font-display uppercase text-sm mt-2">Water Station 1</p>
+              <p class="text-chalk/60 text-xs mt-2 leading-relaxed">Pos medis &amp; hidrasi pertama sejak start lobby.</p>
+            </div>
+          </div>
+
+          <div class="mt-10 grid md:grid-cols-2 gap-6">
+            <div id="zone-0" class="border border-steelline rounded-xl p-6 bg-ink">
+              <h3 class="font-display uppercase text-lg mb-2">Start Line — Lobby</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed">
+                Peserta berlari 200 meter melewati 3 tikungan menuju pintu masuk tangga, dirancang untuk
+                menciptakan jarak antar-pelari sebelum memasuki lintasan tangga.
+              </p>
+            </div>
+            <div class="border border-steelline rounded-xl p-6 bg-ink">
+              <h3 class="font-display uppercase text-lg mb-2">Zona Penonton</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed">
+                Area khusus disediakan di titik start dan finish, dilengkapi LCD monitor untuk menyaksikan
+                jalannya lomba secara langsung.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ KEAMANAN & MEDIS ============ -->
+      <section id="keamanan" class="py-20 md:py-28 bg-ink">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Operasional Event</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-12 max-w-2xl">
+            Protokol Keamanan &amp; Medis
+          </h2>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="border border-steelline rounded-xl p-7">
+              <h3 class="font-display uppercase text-lg mb-3">Race Day Operations</h3>
+              <ul class="space-y-2.5 text-sm text-chalk/70">
+                <li class="flex gap-2"><span class="text-signal">→</span>Wave start system mengatur alur peserta</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>CCTV monitoring real-time seluruh area lomba</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Water station di lantai 26, 57, 80, dan 100</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Lift evakuasi siaga sepanjang event</li>
+              </ul>
+            </div>
+            <div class="border border-steelline rounded-xl p-7">
+              <h3 class="font-display uppercase text-lg mb-3">Protokol Keamanan</h3>
+              <ul class="space-y-2.5 text-sm text-chalk/70">
+                <li class="flex gap-2"><span class="text-signal">→</span>Marshal ditempatkan tiap 2 lantai</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Tim medis ditempatkan tiap 4 lantai</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Petugas damkar di setiap water station</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Screening kesehatan wajib bersama Dinkes DKI</li>
+              </ul>
+            </div>
+            <div class="border border-steelline rounded-xl p-7">
+              <h3 class="font-display uppercase text-lg mb-3">Layanan Medis Dinkes DKI</h3>
+              <ul class="space-y-2.5 text-sm text-chalk/70">
+                <li class="flex gap-2"><span class="text-signal">→</span>Tim medis di pos water station lt. 26, 57, 80 &amp; rooftop</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Ambulance PK3D — primary, secondary, tertiary medevac</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Medical check-up saat Race Pack Collection</li>
+                <li class="flex gap-2"><span class="text-signal">→</span>Simulasi evakuasi 2 minggu sebelum event</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="stair-rule"></div>
+
+      <!-- ============ KOMITMEN LINGKUNGAN ============ -->
+      <section id="lingkungan" class="py-20 md:py-28 bg-steel/30 border-b border-steelline">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Komitmen Lingkungan</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-4 max-w-2xl">
+            Event Olahraga Ramah Lingkungan Pertama di Indonesia
+          </h2>
+          <p class="text-chalk/70 max-w-2xl mb-12 leading-relaxed">
+            Jakarta Vertical Run 2026 berkomitmen menjadi event olahraga ramah lingkungan pertama di
+            Indonesia.
+          </p>
+
+          <div class="grid md:grid-cols-3 gap-5">
+            <div class="border border-steelline rounded-xl p-7 bg-ink">
+              <span class="font-mono text-signal text-2xl font-semibold">01</span>
+              <h3 class="font-display uppercase text-lg mt-3 mb-2">Zero Waste Event</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed">
+                Seluruh event dirancang dengan prinsip zero waste. Tidak ada sampah plastik sekali pakai di
+                seluruh area venue dan race village.
+              </p>
+            </div>
+            <div class="border border-steelline rounded-xl p-7 bg-ink">
+              <span class="font-mono text-signal text-2xl font-semibold">02</span>
+              <h3 class="font-display uppercase text-lg mt-3 mb-2">Tumbler Reusable</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed">
+                Setiap peserta mendapat tumbler reusable eksklusif. Penghapusan total botol plastik di semua
+                water station.
+              </p>
+            </div>
+            <div class="border border-steelline rounded-xl p-7 bg-ink">
+              <span class="font-mono text-signal text-2xl font-semibold">03</span>
+              <h3 class="font-display uppercase text-lg mt-3 mb-2">Kolaborasi Dinas LH DKI</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed">
+                Kerjasama resmi dengan Dinas Lingkungan Hidup DKI Jakarta untuk pengelolaan sampah dan
+                edukasi lingkungan.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ DAMPAK & MANFAAT ============ -->
+      <section id="dampak" class="py-20 md:py-28 bg-ink">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Dampak &amp; Peluang</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-12 max-w-2xl">
+            Manfaat bagi Pemerintah DKI Jakarta
+          </h2>
+
+          <div class="grid md:grid-cols-4 gap-5 mb-14">
+            <div class="border-t-2 border-signal pt-5">
+              <h3 class="font-display uppercase text-base mb-2">Momentum 5 Abad</h3>
+              <p class="text-chalk/60 text-sm leading-relaxed">Perayaan 5 Abad Jakarta 2026 sebagai event flagship olahraga internasional.</p>
+            </div>
+            <div class="border-t-2 border-signal pt-5">
+              <h3 class="font-display uppercase text-base mb-2">Branding Global</h3>
+              <p class="text-chalk/60 text-sm leading-relaxed">Positioning Jakarta sejajar dengan Dubai, Taipei, dan Frankfurt.</p>
+            </div>
+            <div class="border-t-2 border-signal pt-5">
+              <h3 class="font-display uppercase text-base mb-2">Legacy Tahunan</h3>
+              <p class="text-chalk/60 text-sm leading-relaxed">Sport tourism berkelanjutan jangka panjang untuk Jakarta.</p>
+            </div>
+            <div class="border-t-2 border-signal pt-5">
+              <h3 class="font-display uppercase text-base mb-2">Dampak Ekonomi</h3>
+              <p class="text-chalk/60 text-sm leading-relaxed">Dukungan bagi 50+ UMKM binaan DKI dan dampak ekonomi signifikan.</p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-6 border border-steelline rounded-xl p-8 md:p-10">
+            <div>
+              <div class="font-mono text-4xl font-semibold text-signal">85%</div>
+              <p class="text-chalk/70 text-sm mt-2">Peningkatan okupansi hotel kawasan Thamrin Nine selama event berlangsung.</p>
+            </div>
+            <div>
+              <div class="font-mono text-4xl font-semibold text-signal">50+</div>
+              <p class="text-chalk/70 text-sm mt-2">UMKM lokal binaan DKI Jakarta dengan booth exhibition di Race Village.</p>
+            </div>
+            <div>
+              <div class="font-mono text-4xl font-semibold text-signal">10+</div>
+              <p class="text-chalk/70 text-sm mt-2">Negara asing berpartisipasi, menjadikan Jakarta pusat perhatian dunia selama 2 hari penuh.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="stair-rule"></div>
+
+      <!-- ============ JADWAL ============ -->
+      <section id="jadwal" class="py-20 md:py-28 bg-steel/30 border-b border-steelline">
+        <div class="max-w-7xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">Jadwal Acara</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-14 max-w-2xl">
+            14–15 November 2026
+          </h2>
+
+          <ul class="relative border-l-2 border-steelline ml-3 space-y-10">
+            <li class="relative pl-8">
+              <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-signal"></span>
+              <p class="font-mono text-xs text-signal uppercase tracking-widest mb-1">Pre-Event</p>
+              <h3 class="font-display uppercase text-lg mb-1.5">Persiapan &amp; Race Pack Collection</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed max-w-2xl">
+                Technical rehearsal lengkap, simulasi evakuasi darurat, briefing panitia dan volunteer,
+                serta medical screening wajib bekerja sama dengan Dinkes DKI Jakarta.
+              </p>
+            </li>
+            <li class="relative pl-8">
+              <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-signal"></span>
+              <p class="font-mono text-xs text-signal uppercase tracking-widest mb-1">14–15 November</p>
+              <h3 class="font-display uppercase text-lg mb-1.5">Race Day</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed max-w-2xl">
+                Wave start system dari lobby Autograph Tower, menanjak ±350 meter melalui 4 water station,
+                finish di rooftop lantai 100.
+              </p>
+            </li>
+            <li class="relative pl-8">
+              <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-signal"></span>
+              <p class="font-mono text-xs text-signal uppercase tracking-widest mb-1">Finish</p>
+              <h3 class="font-display uppercase text-lg mb-1.5">Celebration di Rooftop</h3>
+              <p class="text-chalk/70 text-sm leading-relaxed max-w-2xl">
+                Pengalungan medali, sesi foto, dan celebration di rooftop berkapasitas 500 orang, sebelum
+                peserta turun melalui 4 lift menuju lantai 2.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============ FAQ ============ -->
+      <section id="faq" class="py-20 md:py-28 bg-ink">
+        <div class="max-w-4xl mx-auto px-5 md:px-8">
+          <p class="font-mono text-signal text-xs tracking-[0.25em] uppercase mb-3">FAQ</p>
+          <h2 class="font-display uppercase text-3xl md:text-4xl font-semibold leading-tight mb-12">
+            Pertanyaan Umum
+          </h2>
+
+          <!-- accordion kustom: div + Alpine, bukan <details>/collapse bawaan -->
+          <div
+            x-data="{
+              open: 0,
+              items: [
+                { q: 'Apa itu Jakarta Vertical Run?', a: 'Jakarta Vertical Run 2026 adalah event lari vertikal (menaiki tangga gedung) internasional terbesar di Asia Tenggara, diselenggarakan di Autograph Tower, gedung tertinggi di Indonesia dan seluruh Belahan Bumi Selatan.' },
+                { q: 'Siapa saja yang boleh mengikuti lomba?', a: 'Tersedia tiga kategori: Elite untuk atlet profesional, Open 18–39, dan Master 40 tahun ke atas, untuk pelari putra maupun putri.' },
+                { q: 'Bagaimana sistem start di lomba ini?', a: 'Peserta dilepas per wave menggunakan sistem flag-off — kategori Elite dilepas tiap 10 detik per atlet, sementara kategori umum dilepas tiap 10 detik per 5 pelari.' },
+                { q: 'Apa yang didapat peserta terkait isu lingkungan?', a: 'Setiap peserta mendapat tumbler reusable eksklusif. Event ini menerapkan prinsip zero waste, tanpa botol plastik sekali pakai di seluruh water station.' },
+                { q: 'Apakah lomba ini aman?', a: 'Ya. Marshal ditempatkan tiap 2 lantai, tim medis tiap 4 lantai, petugas damkar di setiap water station, CCTV monitoring real-time, serta lift evakuasi siaga sepanjang event, bekerja sama dengan Dinkes DKI Jakarta.' },
+                { q: 'Dimana lokasi dan kapan acaranya?', a: 'Acara berlangsung 14–15 November 2026 di Autograph Tower, Thamrin Nine, Jakarta Pusat.' },
+              ]
+            }"
+            class="divide-y divide-steelline border-t border-b border-steelline"
+          >
+            <template x-for="(item, idx) in items" :key="idx">
+              <div>
+                <button
+                  type="button"
+                  @click="open = open === idx ? -1 : idx"
+                  :aria-expanded="open === idx"
+                  class="w-full flex items-center justify-between gap-4 py-5 text-left"
+                >
+                  <span class="font-display uppercase text-base md:text-lg" x-text="item.q"></span>
+                  <svg
+                    class="w-5 h-5 shrink-0 text-signal transition-transform"
+                    :class="open === idx ? 'rotate-45' : ''"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <div
+                  x-show="open === idx"
+                  x-transition:enter="transition ease-out duration-200"
+                  x-transition:enter-start="opacity-0 -translate-y-1"
+                  x-transition:enter-end="opacity-100 translate-y-0"
+                  class="pb-6 pr-10"
+                  style="display: none"
+                >
+                  <p class="text-chalk/70 text-sm leading-relaxed" x-text="item.a"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CTA / KONTAK ============ -->
+      <section id="daftar" class="py-24 md:py-32 bg-signal text-ink relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-5 md:px-8 relative grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 class="font-display uppercase text-4xl md:text-6xl font-semibold leading-[0.95] mb-6">
+              Naik ke Puncak<br />Jakarta.
+            </h2>
+            <p class="text-ink/80 max-w-md mb-8">
+              Bersama kita wujudkan Jakarta Vertical Run 2026 sebagai event lari vertikal internasional
+              terbesar di Asia Tenggara.
+            </p>
+            <a
+              href="https://jakartaverticalrun.id"
+              class="inline-flex items-center gap-2 font-display uppercase tracking-wide bg-ink text-chalk px-7 py-3.5 rounded hover:opacity-90 transition"
+            >
+              jakartaverticalrun.id
+            </a>
+          </div>
+
+          <div class="bg-ink/95 text-chalk rounded-2xl p-8 md:p-10">
+            <p class="font-mono text-xs uppercase tracking-widest text-signal mb-4">Hubungi Kami</p>
+            <ul class="space-y-3 text-sm mb-6">
+              <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-signal"></span>ALTI DKI Jakarta</li>
+              <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-signal"></span>Cakrawala Jakarta Kreatif</li>
+              <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-signal"></span>Thamrin Nine Management</li>
+            </ul>
+            <div class="pt-6 border-t border-steelline font-mono text-sm text-chalk/70">
+              14–15 November 2026<br />
+              Autograph Tower, Jakarta
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="bg-ink border-t border-steelline pt-16 pb-8">
+      <div class="max-w-7xl mx-auto px-5 md:px-8">
+        <div class="grid md:grid-cols-4 gap-10 mb-12">
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="font-display text-xl font-semibold tracking-wide">JVR</span>
+              <span class="font-mono text-[11px] text-signal border border-signal/50 rounded px-1.5 py-0.5">2026</span>
+            </div>
+            <p class="text-chalk/60 text-sm max-w-sm leading-relaxed">
+              Jakarta Vertical Run 2026 — Festival Olahraga Jakarta. Diselenggarakan oleh Cakrawala Jakarta
+              Kreatif bersama ALTI DKI Jakarta, didukung Thamrin Nine Management.
+            </p>
+          </div>
+          <div>
+            <p class="font-display uppercase text-sm tracking-widest text-chalk/50 mb-4">Jelajahi</p>
+            <ul class="space-y-2.5 text-sm text-chalk/70">
+              <li><a href="#ringkasan" class="hover:text-signal">Tentang Event</a></li>
+              <li><a href="#kategori" class="hover:text-signal">Kategori Lomba</a></li>
+              <li><a href="#rute" class="hover:text-signal">Rute &amp; Water Station</a></li>
+              <li><a href="#keamanan" class="hover:text-signal">Keamanan &amp; Medis</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-display uppercase text-sm tracking-widest text-chalk/50 mb-4">Lainnya</p>
+            <ul class="space-y-2.5 text-sm text-chalk/70">
+              <li><a href="#circuit" class="hover:text-signal">Circuit Dunia</a></li>
+              <li><a href="#lingkungan" class="hover:text-signal">Komitmen Lingkungan</a></li>
+              <li><a href="#jadwal" class="hover:text-signal">Jadwal Acara</a></li>
+              <li><a href="#faq" class="hover:text-signal">FAQ</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="stair-rule mb-6"></div>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-chalk/40 font-mono">
+          <span>© 2026 Jakarta Vertical Run. Seluruh hak cipta dilindungi.</span>
+          <span>Autograph Tower · Thamrin Nine · Jakarta Pusat</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ============ ALPINE COMPONENTS ============ -->
+    <script>
+      function countdown(targetISO) {
+        return {
+          units: [
+            { label: "Hari", value: "00" },
+            { label: "Jam", value: "00" },
+            { label: "Menit", value: "00" },
+            { label: "Detik", value: "00" },
+          ],
+          tick() {
+            const target = new Date(targetISO).getTime();
+            const now = Date.now();
+            let diff = Math.max(0, target - now);
+
+            const pad = (n) => String(n).padStart(2, "0");
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / (1000 * 60)) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            this.units = [
+              { label: "Hari", value: pad(days) },
+              { label: "Jam", value: pad(hours) },
+              { label: "Menit", value: pad(minutes) },
+              { label: "Detik", value: pad(seconds) },
+            ];
+          },
+        };
+      }
+
+      function liftRail() {
+        return {
+          current: "0",
+          floors: [
+            { value: "100", label: "FINISH", target: "zone-100" },
+            { value: "80", label: "W.STATION 3", target: "zone-80" },
+            { value: "57", label: "W.STATION 2", target: "zone-57" },
+            { value: "26", label: "W.STATION 1", target: "zone-26" },
+            { value: "0", label: "START", target: "zone-0" },
+          ],
+          init() {
+            const ids = ["zone-100", "zone-80", "zone-57", "zone-26", "zone-0"];
+            const targets = ids.map((id) => document.getElementById(id)).filter(Boolean);
+            if (!targets.length) return;
+
+            const map = { "zone-100": "100", "zone-80": "80", "zone-57": "57", "zone-26": "26", "zone-0": "0" };
+
+            const observer = new IntersectionObserver(
+              (entries) => {
+                entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                    this.current = map[entry.target.id];
+                  }
+                });
+              },
+              { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
+            );
+
+            targets.forEach((el) => observer.observe(el));
+          },
+        };
+      }
+    </script>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
